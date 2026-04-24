@@ -1,0 +1,733 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>LEAP-Q</title>
+    
+    <style>
+        body {
+          font-family: Arial, Helvetica, sans-serif;
+          max-width: 1100px;
+          margin: 28px auto;
+          padding: 0 20px 40px;
+          line-height: 1.35;
+          color: #111;
+        }
+        h1, h2 {
+          margin: 0 0 10px 0;
+        }
+        h2 {
+          margin-top: 28px;
+          padding-top: 8px;
+          border-top: 2px solid #ddd;
+        }
+        .block {
+          border: 1px solid #d9d9d9;
+          border-radius: 8px;
+          padding: 14px 16px;
+          margin: 14px 0;
+        }
+        .grid-3 {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 12px;
+        }
+        .grid-4 {
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
+          gap: 12px;
+        }
+        .grid-5 {
+          display: grid;
+          grid-template-columns: repeat(5, 1fr);
+          gap: 12px;
+        }
+        .field {
+          margin: 8px 0;
+        }
+        label {
+          display: block;
+          font-size: 14px;
+          margin-bottom: 4px;
+        }
+        input[type="text"], input[type="number"], input[type="date"], textarea, select {
+          width: 100%;
+          box-sizing: border-box;
+          padding: 8px;
+          border: 1px solid #bbb;
+          border-radius: 6px;
+          font-size: 14px;
+        }
+        textarea {
+          min-height: 90px;
+          resize: vertical;
+        }
+        table {
+          width: 100%;
+          border-collapse: collapse;
+          margin-top: 10px;
+        }
+        th, td {
+          border: 1px solid #ccc;
+          padding: 8px;
+          vertical-align: top;
+          text-align: left;
+        }
+        .small {
+          font-size: 13px;
+          color: #444;
+        }
+        .choice-grid {
+          display: grid;
+          grid-template-columns: repeat(3, minmax(180px, 1fr));
+          gap: 8px 12px;
+          margin-top: 10px;
+        }
+        .submit-row {
+          margin-top: 24px;
+        }
+        button {
+          padding: 10px 16px;
+          border: 1px solid #999;
+          border-radius: 6px;
+          background: #f6f6f6;
+          cursor: pointer;
+          font-size: 14px;
+        }
+        .error {
+          color: #b00020;
+          font-size: 13px;
+          margin-top: 8px;
+        }
+      </style>
+</head>
+
+<body>
+    
+    <h1>Language Experience and Proficiency Questionnaire (LEAP-Q)</h1>
+    <p class="small">We will now ask you some questions about your language experience. First some general questions, and then we will ask you some questions about your knowledge of English and your knowledge of Italian.</p>
+
+    <form id="leapqForm">
+    
+        <h2>General section</h2>
+    
+        <p class="small">Scale labels: for proficiency, 0 = none and 10 = perfect. For culture identification, learning contribution, and current exposure, 0 = not at all and 10 = very much. For foreign accent, 0 = no foreign accent and 10 = very strong foreign accent. For being identified as a non-native speaker, 0 = never and 10 = always.</p>
+    
+        <div class="block">
+          <p>(1) Please list all the languages you know in order of dominance:</p>
+          <div class="grid-5">
+            <input type="text" name="dominance_1">
+            <input type="text" name="dominance_2">
+            <input type="text" name="dominance_3">
+            <input type="text" name="dominance_4">
+            <input type="text" name="dominance_5">
+          </div>
+          <div class="error" id="dominance_error"></div>
+        </div>
+    
+        <div class="block">
+          <p>(2) Please list all the languages you know in order of acquisition (your native language first):</p>
+          <div class="grid-5">
+            <input type="text" name="acquisition_1">
+            <input type="text" name="acquisition_2">
+            <input type="text" name="acquisition_3">
+            <input type="text" name="acquisition_4">
+            <input type="text" name="acquisition_5">
+          </div>
+          <div class="error" id="acquisition_error"></div>
+        </div>
+    
+        <div class="block">
+          <p>(3) Please list what percentage of the time you are currently and on average exposed to each language.</p>
+          <p>(Your percentages across all listed languages should add up to 100% total):</p>
+          <table>
+            <tr>
+              <th>List language here</th>
+              <th>1</th><th>2</th><th>3</th><th>4</th><th>5</th>
+            </tr>
+            <tr>
+              <td>Language</td>
+              <td><input type="text" name="exp_lang_1"></td>
+              <td><input type="text" name="exp_lang_2"></td>
+              <td><input type="text" name="exp_lang_3"></td>
+              <td><input type="text" name="exp_lang_4"></td>
+              <td><input type="text" name="exp_lang_5"></td>
+            </tr>
+            <tr>
+              <td>List percentage here</td>
+              <td><input type="number" name="exp_pct_1" min="0" max="100"></td>
+              <td><input type="number" name="exp_pct_2" min="0" max="100"></td>
+              <td><input type="number" name="exp_pct_3" min="0" max="100"></td>
+              <td><input type="number" name="exp_pct_4" min="0" max="100"></td>
+              <td><input type="number" name="exp_pct_5" min="0" max="100"></td>
+            </tr>
+          
+            <tr>
+              <td><strong>Total</strong></td>
+              <td colspan="5"><span id="exp_total">0</span>%</td>
+            </tr>
+          </table>
+          <p class="small">The percentages entered across all listed languages must sum to 100.</p>
+          <div class="error" id="exp_error"></div>
+        </div>
+    
+        <div class="block">
+          <p>(4) When choosing to read a text available in all your languages, in what percentage of cases would you choose to read it in each of your languages? Assume that the original was written in another language, which is unknown to you.</p>
+          <p>(Your percentages across all listed languages should add up to 100% total):</p>
+          <table>
+            <tr>
+              <th>List language here</th>
+              <th>1</th><th>2</th><th>3</th><th>4</th><th>5</th>
+            </tr>
+            <tr>
+              <td>Language</td>
+              <td><input type="text" name="read_lang_1"></td>
+              <td><input type="text" name="read_lang_2"></td>
+              <td><input type="text" name="read_lang_3"></td>
+              <td><input type="text" name="read_lang_4"></td>
+              <td><input type="text" name="read_lang_5"></td>
+            </tr>
+            <tr>
+              <td>List percentage here</td>
+              <td><input type="number" name="read_pct_1" min="0" max="100"></td>
+              <td><input type="number" name="read_pct_2" min="0" max="100"></td>
+              <td><input type="number" name="read_pct_3" min="0" max="100"></td>
+              <td><input type="number" name="read_pct_4" min="0" max="100"></td>
+              <td><input type="number" name="read_pct_5" min="0" max="100"></td>
+            </tr>
+          
+            <tr>
+              <td><strong>Total</strong></td>
+              <td colspan="5"><span id="read_total">0</span>%</td>
+            </tr>
+          </table>
+          <p class="small">The percentages entered across all listed languages must sum to 100.</p>
+          <div class="error" id="read_error"></div>
+        </div>
+    
+        <div class="block">
+          <p>(5) When choosing a language to speak with a person who is equally fluent in all your languages, what percentage of time would you choose to speak each language? Please report percent of total time.</p>
+          <p>(Your percentages across all listed languages should add up to 100% total):</p>
+          <table>
+            <tr>
+              <th>List language here</th>
+              <th>1</th><th>2</th><th>3</th><th>4</th><th>5</th>
+            </tr>
+            <tr>
+              <td>Language</td>
+              <td><input type="text" name="speak_lang_1"></td>
+              <td><input type="text" name="speak_lang_2"></td>
+              <td><input type="text" name="speak_lang_3"></td>
+              <td><input type="text" name="speak_lang_4"></td>
+              <td><input type="text" name="speak_lang_5"></td>
+            </tr>
+            <tr>
+              <td>List percentage here</td>
+              <td><input type="number" name="speak_pct_1" min="0" max="100"></td>
+              <td><input type="number" name="speak_pct_2" min="0" max="100"></td>
+              <td><input type="number" name="speak_pct_3" min="0" max="100"></td>
+              <td><input type="number" name="speak_pct_4" min="0" max="100"></td>
+              <td><input type="number" name="speak_pct_5" min="0" max="100"></td>
+            </tr>
+          
+            <tr>
+              <td><strong>Total</strong></td>
+              <td colspan="5"><span id="speak_total">0</span>%</td>
+            </tr>
+          </table>
+          <p class="small">The percentages entered across all listed languages must sum to 100.</p>
+          <div class="error" id="speak_error"></div>
+        </div>
+    
+        <div class="block">
+          <p>(6) Please name the cultures with which you identify. On a scale from zero to ten, please rate the extent to which you identify with each culture. (Examples of possible cultures include US-American, Chinese, Jewish-Orthodox, etc):</p>
+          <p class="small">0 = not at all, 10 = very strongly</p>
+          <table>
+            <tr>
+              <th>Culture</th>
+              <th>Rating 0-10</th>
+            </tr>
+            <tr><td><input type="text" name="culture_1"></td><td><select name="culture_rating_1"><option value=""></option><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></td></tr>
+            <tr><td><input type="text" name="culture_2"></td><td><select name="culture_rating_2"><option value=""></option><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></td></tr>
+            <tr><td><input type="text" name="culture_3"></td><td><select name="culture_rating_3"><option value=""></option><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></td></tr>
+            <tr><td><input type="text" name="culture_4"></td><td><select name="culture_rating_4"><option value=""></option><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></td></tr>
+            <tr><td><input type="text" name="culture_5"></td><td><select name="culture_rating_5"><option value=""></option><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></td></tr>
+          </table>
+          <div class="error" id="culture_error"></div>
+        </div>
+    
+        <div class="block">
+          <p>(7) How many years of formal education do you have?</p>
+          <input type="number" name="formal_education_years" min="0" required>
+    
+          <p style="margin-top:12px;">Please check your highest education level:</p>
+    
+          <div class="choice-grid">
+            <label><input type="radio" name="education_level" value="Less than High School" required> Less than High School</label>
+            <label><input type="radio" name="education_level" value="Some College" required> Some College</label>
+            <label><input type="radio" name="education_level" value="Masters" required> Masters</label>
+            <label><input type="radio" name="education_level" value="High School" required> High School</label>
+            <label><input type="radio" name="education_level" value="College" required> College</label>
+            <label><input type="radio" name="education_level" value="Ph.D./M.D./J.D." required> Ph.D./M.D./J.D.</label>
+            <label><input type="radio" name="education_level" value="Professional Training" required> Professional Training</label>
+            <label><input type="radio" name="education_level" value="Some Graduate School" required> Some Graduate School</label>
+            <label><input type="radio" name="education_level" value="Other" required> Other</label>
+          </div>
+          <div class="field">
+            <label>Other</label>
+            <input type="text" name="edu_other_text">
+          </div>
+          <div class="error" id="education_other_error"></div>
+        </div>
+    
+        <div class="block">
+          <p>(8) Country of current residence:</p>
+          <input type="text" name="current_residence_country" required>
+    
+          <p style="margin-top:12px;">If you have ever immigrated to another country, please provide name of country and length of immigration here (e.g., Spain - 3 years).</p>
+    
+          <table>
+            <tr>
+              <th>Country</th>
+              <th>Time (years)</th>
+            </tr>
+            <tr>
+              <td><input type="text" name="immigration_country_1"></td>
+              <td><input type="number" name="immigration_time_1" min="0"></td>
+            </tr>
+            <tr>
+              <td><input type="text" name="immigration_country_2"></td>
+              <td><input type="number" name="immigration_time_2" min="0"></td>
+            </tr>
+            <tr>
+              <td><input type="text" name="immigration_country_3"></td>
+              <td><input type="number" name="immigration_time_3" min="0"></td>
+            </tr>
+          </table>
+          <div class="error" id="immigration_error"></div>
+        </div>
+    
+        <div class="block">
+          <p>(9) Have you ever had a vision problem, hearing impairment, language disability, or learning disability? (Check all applicable). If yes, please explain (including any corrections):</p>
+          <div class="choice-grid">
+            <label><input type="checkbox" name="disability_options" value="Vision problem"> Vision problem</label>
+            <label><input type="checkbox" name="disability_options" value="Hearing impairment"> Hearing impairment</label>
+            <label><input type="checkbox" name="disability_options" value="Language disability"> Language disability</label>
+            <label><input type="checkbox" name="disability_options" value="Learning disability"> Learning disability</label>
+            <label><input type="checkbox" name="disability_options" value="None" id="disability_none"> None</label>
+          </div>
+          <div class="field">
+            <label>Explanation</label>
+            <textarea name="disability_explanation"></textarea>
+          </div>
+          <div class="error" id="disability_error"></div>
+        </div>
+    
+    
+      <h2>English section</h2>
+    
+      <div class="block">
+        <p>Language: English</p>
+        <p>All questions below refer to your knowledge of English.</p>
+      </div>
+    
+      <div class="block">
+        <p>(1) Age when you…:</p>
+        <div class="grid-4">
+          <div class="field">
+            <label>began acquiring English:</label>
+            <input type="number" name="eng_age_began_acquiring" min="0" required>
+          </div>
+          <div class="field">
+            <label>became fluent in English:</label>
+            <input type="number" name="eng_age_became_fluent" min="0" required>
+          </div>
+          <div class="field">
+            <label>began reading in English:</label>
+            <input type="number" name="eng_age_began_reading" min="0" required>
+          </div>
+          <div class="field">
+            <label>became fluent reading in English:</label>
+            <input type="number" name="eng_age_became_fluent_reading" min="0" required>
+          </div>
+        </div>
+      </div>
+    
+      <div class="block">
+        <p>(2) Please list the number of years and months you spent in each language environment:</p>
+        <table>
+          <tr>
+            <th></th>
+            <th>Years</th>
+            <th>Months</th>
+          </tr>
+          <tr>
+            <td>A country where English is spoken</td>
+            <td><input type="number" name="eng_country_years" min="0" required></td>
+            <td><input type="number" name="eng_country_months" min="0" max="11" required></td>
+          </tr>
+          <tr>
+            <td>A family where English is spoken</td>
+            <td><input type="number" name="eng_family_years" min="0" required></td>
+            <td><input type="number" name="eng_family_months" min="0" max="11" required></td>
+          </tr>
+          <tr>
+            <td>A school and/or working environment where English is spoken</td>
+            <td><input type="number" name="eng_schoolwork_years" min="0" required></td>
+            <td><input type="number" name="eng_schoolwork_months" min="0" max="11" required></td>
+          </tr>
+        </table>
+      </div>
+    
+      <div class="block">
+        <p>(3) On a scale from zero to ten, please select your level of proficiency in speaking, understanding spoken language, and reading English from the scroll-down menus:</p>
+        <p class="small">0 = none, 10 = perfect</p>
+        <table>
+          <tr>
+            <th>Speaking</th>
+            <th>Understanding spoken language</th>
+            <th>Reading</th>
+          </tr>
+          <tr>
+            <td><select name="eng_proficiency_speaking" required><option value=""></option><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></td>
+            <td><select name="eng_proficiency_understanding" required><option value=""></option><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></td>
+            <td><select name="eng_proficiency_reading" required><option value=""></option><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></td>
+          </tr>
+        </table>
+      </div>
+    
+      <div class="block">
+        <p>(4) On a scale from zero to ten, please select how much the following factors contributed to you learning English:</p>
+        <p class="small">0 = not at all, 10 = very much</p>
+        <table>
+          <tr>
+            <th>Factor</th>
+            <th>Rating 0-10</th>
+          </tr>
+          <tr><td>Interacting with friends</td><td><select name="eng_learning_friends" required><option value=""></option><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></td></tr>
+          <tr><td>Language tapes/self instruction</td><td><select name="eng_learning_self" required><option value=""></option><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></td></tr>
+          <tr><td>Interacting with family</td><td><select name="eng_learning_family" required><option value=""></option><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></td></tr>
+          <tr><td>Watching TV</td><td><select name="eng_learning_tv" required><option value=""></option><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></td></tr>
+          <tr><td>Reading</td><td><select name="eng_learning_reading" required><option value=""></option><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></td></tr>
+          <tr><td>Listening to the radio</td><td><select name="eng_learning_radio" required><option value=""></option><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></td></tr>
+        </table>
+      </div>
+    
+      <div class="block">
+        <p>(5) Please rate to what extent you are currently exposed to English in the following contexts:</p>
+        <p class="small">0 = not at all, 10 = very much</p>
+        <table>
+          <tr>
+            <th>Context</th>
+            <th>Rating 0-10</th>
+          </tr>
+          <tr><td>Interacting with friends</td><td><select name="eng_exposure_friends" required><option value=""></option><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></td></tr>
+          <tr><td>Listening to radio/music</td><td><select name="eng_exposure_radio_music" required><option value=""></option><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></td></tr>
+          <tr><td>Interacting with family</td><td><select name="eng_exposure_family" required><option value=""></option><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></td></tr>
+          <tr><td>Reading</td><td><select name="eng_exposure_reading" required><option value=""></option><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></td></tr>
+          <tr><td>Watching TV</td><td><select name="eng_exposure_tv" required><option value=""></option><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></td></tr>
+          <tr><td>Language-lab/self-instruction</td><td><select name="eng_exposure_lab_self" required><option value=""></option><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></td></tr>
+        </table>
+      </div>
+    
+      <div class="block">
+        <p>(6) In your perception, how much of a foreign accent do you have in English?</p>
+        <p class="small">0 = no foreign accent, 10 = very strong foreign accent</p>
+        <select name="eng_foreign_accent" required><option value=""></option><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select>
+      </div>
+    
+      <div class="block">
+        <p>(7) Please rate how frequently others identify you as a non-native speaker based on your accent in English:</p>
+        <p class="small">0 = never, 10 = always</p>
+        <select name="eng_identified_non_native" required><option value=""></option><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select>
+      </div>
+    
+    
+      <h2>Italian section</h2>
+    
+      <div class="block">
+        <p>Language: Italian</p>
+        <p>All questions below refer to your knowledge of Italian.</p>
+      </div>
+    
+      <div class="block">
+        <p>(1) Age when you…:</p>
+        <div class="grid-4">
+          <div class="field">
+            <label>began acquiring Italian:</label>
+            <input type="number" name="ita_age_began_acquiring" min="0" required>
+          </div>
+          <div class="field">
+            <label>became fluent in Italian:</label>
+            <input type="number" name="ita_age_became_fluent" min="0" required>
+          </div>
+          <div class="field">
+            <label>began reading in Italian:</label>
+            <input type="number" name="ita_age_began_reading" min="0" required>
+          </div>
+          <div class="field">
+            <label>became fluent reading in Italian:</label>
+            <input type="number" name="ita_age_became_fluent_reading" min="0" required>
+          </div>
+        </div>
+      </div>
+    
+      <div class="block">
+        <p>(2) Please list the number of years and months you spent in each language environment:</p>
+        <table>
+          <tr>
+            <th></th>
+            <th>Years</th>
+            <th>Months</th>
+          </tr>
+          <tr>
+            <td>A country where Italian is spoken</td>
+            <td><input type="number" name="ita_country_years" min="0" required></td>
+            <td><input type="number" name="ita_country_months" min="0" max="11" required></td>
+          </tr>
+          <tr>
+            <td>A family where Italian is spoken</td>
+            <td><input type="number" name="ita_family_years" min="0" required></td>
+            <td><input type="number" name="ita_family_months" min="0" max="11" required></td>
+          </tr>
+          <tr>
+            <td>A school and/or working environment where Italian is spoken</td>
+            <td><input type="number" name="ita_schoolwork_years" min="0" required></td>
+            <td><input type="number" name="ita_schoolwork_months" min="0" max="11" required></td>
+          </tr>
+        </table>
+      </div>
+    
+      <div class="block">
+        <p>(3) On a scale from zero to ten, please select your level of proficiency in speaking, understanding spoken language, and reading Italian from the scroll-down menus:</p>
+        <p class="small">0 = none, 10 = perfect</p>
+        <table>
+          <tr>
+            <th>Speaking</th>
+            <th>Understanding spoken language</th>
+            <th>Reading</th>
+          </tr>
+          <tr>
+            <td><select name="ita_proficiency_speaking" required><option value=""></option><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></td>
+            <td><select name="ita_proficiency_understanding" required><option value=""></option><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></td>
+            <td><select name="ita_proficiency_reading" required><option value=""></option><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></td>
+          </tr>
+        </table>
+      </div>
+    
+      <div class="block">
+        <p>(4) On a scale from zero to ten, please select how much the following factors contributed to you learning Italian:</p>
+        <p class="small">0 = not at all, 10 = very much</p>
+        <table>
+          <tr>
+            <th>Factor</th>
+            <th>Rating 0-10</th>
+          </tr>
+          <tr><td>Interacting with friends</td><td><select name="ita_learning_friends" required><option value=""></option><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></td></tr>
+          <tr><td>Language tapes/self instruction</td><td><select name="ita_learning_self" required><option value=""></option><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></td></tr>
+          <tr><td>Interacting with family</td><td><select name="ita_learning_family" required><option value=""></option><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></td></tr>
+          <tr><td>Watching TV</td><td><select name="ita_learning_tv" required><option value=""></option><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></td></tr>
+          <tr><td>Reading</td><td><select name="ita_learning_reading" required><option value=""></option><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></td></tr>
+          <tr><td>Listening to the radio</td><td><select name="ita_learning_radio" required><option value=""></option><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></td></tr>
+        </table>
+      </div>
+    
+      <div class="block">
+        <p>(5) Please rate to what extent you are currently exposed to Italian in the following contexts:</p>
+        <p class="small">0 = not at all, 10 = very much</p>
+        <table>
+          <tr>
+            <th>Context</th>
+            <th>Rating 0-10</th>
+          </tr>
+          <tr><td>Interacting with friends</td><td><select name="ita_exposure_friends" required><option value=""></option><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></td></tr>
+          <tr><td>Listening to radio/music</td><td><select name="ita_exposure_radio_music" required><option value=""></option><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></td></tr>
+          <tr><td>Interacting with family</td><td><select name="ita_exposure_family" required><option value=""></option><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></td></tr>
+          <tr><td>Reading</td><td><select name="ita_exposure_reading" required><option value=""></option><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></td></tr>
+          <tr><td>Watching TV</td><td><select name="ita_exposure_tv" required><option value=""></option><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></td></tr>
+          <tr><td>Language-lab/self-instruction</td><td><select name="ita_exposure_lab_self" required><option value=""></option><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></td></tr>
+        </table>
+      </div>
+    
+      <div class="block">
+        <p>(6) In your perception, how much of a foreign accent do you have in Italian?</p>
+        <p class="small">0 = no foreign accent, 10 = very strong foreign accent</p>
+        <select name="ita_foreign_accent" required><option value=""></option><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select>
+      </div>
+    
+      <div class="block">
+        <p>(7) Please rate how frequently others identify you as a non-native speaker based on your accent in Italian:</p>
+        <p class="small">0 = never, 10 = always</p>
+        <select name="ita_identified_non_native" required><option value=""></option><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select>
+      </div>
+
+
+  </form>
+
+<script>
+
+/* ---------- CORE FIX ---------- */
+
+// This flag is what PennController will read
+document.body.setAttribute("data-valid", "false");
+
+
+/* ---------- ERROR HELPERS ---------- */
+
+function clearErrors() {
+  document.querySelectorAll('.error').forEach(el => el.textContent = '');
+}
+
+function setError(id, message) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = message;
+}
+
+
+/* ---------- VALIDATION HELPERS ---------- */
+
+function atLeastOneFilled(names) {
+  return names.some(name => {
+    const field = document.querySelector(`[name="${name}"]`);
+    return field && field.value.trim() !== '';
+  });
+}
+
+function validateSimpleList(prefix, errorId) {
+  const names = [1,2,3,4,5].map(i => `${prefix}_${i}`);
+  if (!atLeastOneFilled(names)) {
+    setError(errorId, 'Please complete at least one line.');
+    return false;
+  }
+  return true;
+}
+
+function validatePercentageTable(langPrefix, pctPrefix, errorId) {
+  let total = 0;
+  let filled = 0;
+
+  for (let i = 1; i <= 5; i++) {
+    const lang = document.querySelector(`[name="${langPrefix}_${i}"]`).value.trim();
+    const pctRaw = document.querySelector(`[name="${pctPrefix}_${i}"]`).value.trim();
+
+    if (!lang && !pctRaw) continue;
+
+    if (!lang || !pctRaw) {
+      setError(errorId, 'Each row needs language + percentage.');
+      return false;
+    }
+
+    const pct = Number(pctRaw);
+    if (!Number.isFinite(pct) || pct < 0 || pct > 100) {
+      setError(errorId, 'Percentages must be 0–100.');
+      return false;
+    }
+
+    total += pct;
+    filled++;
+  }
+
+  if (filled === 0) {
+    setError(errorId, 'Fill at least one row.');
+    return false;
+  }
+
+  if (Math.round(total) !== 100) {
+    setError(errorId, 'Total must equal 100.');
+    return false;
+  }
+
+  return true;
+}
+
+function validateCultureTable() {
+  let filled = 0;
+
+  for (let i = 1; i <= 5; i++) {
+    const c = document.querySelector(`[name="culture_${i}"]`).value.trim();
+    const r = document.querySelector(`[name="culture_rating_${i}"]`).value;
+
+    if (!c && !r) continue;
+
+    if (!c || !r) {
+      setError('culture_error', 'Fill culture + rating.');
+      return false;
+    }
+
+    filled++;
+  }
+
+  if (filled === 0) {
+    setError('culture_error', 'Fill at least one row.');
+    return false;
+  }
+
+  return true;
+}
+
+function validateEducationOther() {
+  const other = document.querySelector('[value="Other"]').checked;
+  const text = document.querySelector('[name="edu_other_text"]').value.trim();
+
+  if (other && !text) {
+    setError('education_other_error', 'Specify "Other".');
+    return false;
+  }
+  return true;
+}
+
+function validateDisability() {
+  const checked = [...document.querySelectorAll('[name="disability_options"]:checked')];
+  const explanation = document.querySelector('[name="disability_explanation"]').value.trim();
+
+  if (checked.length === 0) {
+    setError('disability_error', 'Select at least one.');
+    return false;
+  }
+
+  const none = checked.some(c => c.value === 'None');
+
+  if (none && checked.length > 1) {
+    setError('disability_error', 'Choose None OR others.');
+    return false;
+  }
+
+  if (!none && !explanation) {
+    setError('disability_error', 'Add explanation.');
+    return false;
+  }
+
+  return true;
+}
+
+
+/* ---------- MAIN VALIDATION ---------- */
+
+window.validateLeapQ = function() {
+
+  clearErrors();
+
+  let valid = true;
+
+  if (!validateSimpleList('dominance', 'dominance_error')) valid = false;
+  if (!validateSimpleList('acquisition', 'acquisition_error')) valid = false;
+
+  if (!validatePercentageTable('exp_lang', 'exp_pct', 'exp_error')) valid = false;
+  if (!validatePercentageTable('read_lang', 'read_pct', 'read_error')) valid = false;
+  if (!validatePercentageTable('speak_lang', 'speak_pct', 'speak_error')) valid = false;
+
+  if (!validateCultureTable()) valid = false;
+  if (!validateEducationOther()) valid = false;
+  if (!validateDisability()) valid = false;
+
+  // 🔥 THIS is what PennController reads
+  document.body.setAttribute("data-valid", valid ? "true" : "false");
+
+  return valid;
+};
+
+</script>
+
+</body>
+</html>

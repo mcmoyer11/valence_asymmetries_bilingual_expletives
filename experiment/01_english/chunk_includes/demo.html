@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Background Questions</title>
+    <style>
+        body {
+            font-size: 16pt;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+        .obligatory-warning {
+            color: red;
+            font-weight: bold;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+        .question-block {
+            margin-bottom: 20px;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Please answer some questions about your background and the languages you speak.</h1>
+
+<div class="question-block">
+    <p><strong>What is your age?</strong></p>
+    <input type="number" name="age" min="18" max="120" class="obligatory">
+</div>
+
+<div class="question-block">
+    <p><strong>What is your gender?</strong></p>
+    <label><input type="radio" name="gender" value="man" class="obligatory"> Man</label><br>
+    <label><input type="radio" name="gender" value="woman" class="obligatory"> Woman</label><br>
+    <label><input type="radio" name="gender" value="nonbinary" class="obligatory"> Non-binary</label><br>
+    <label><input type="radio" name="gender" value="other" class="obligatory"> Other</label><br>
+    <label><input type="radio" name="gender" value="prefer_not_say" class="obligatory"> Prefer not to say</label><br>
+</div>
+
+<p id="warning" class="obligatory-warning" style="display:none;">
+    Please answer all required questions to proceed.
+</p>
+
+</body>
+</html>
