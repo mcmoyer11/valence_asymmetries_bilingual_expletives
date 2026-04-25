@@ -1,5 +1,5 @@
 ---
-title: "At-Issue judgments W&R stimuli: Graphs"
+title: "Bilingual Assholes: Graphs"
 author: "morgan moyer"
 date: "`r Sys.Date()`"
 output: html_document
@@ -26,9 +26,11 @@ gPal <- c("#B9E615","#5E15E6","#F78D02", "#009E73")
 
 this.dir <- dirname(rstudioapi::getSourceEditorContext()$path)
 setwd(this.dir)
-source("../../helpers.R")
+source("../helpers.R")
 
-d <- read.csv("../data/processed.csv")
+d <- read.csv("../data/processed_expl.csv")
+
+names(d)
 ```
 
 
@@ -36,8 +38,8 @@ d <- read.csv("../data/processed.csv")
 ```{r}
 agr <- d %>% 
   group_by(Valence) %>% 
-  summarize(MeanPropAtIssue = mean(Response),
-            SD = sd(Response))
+  summarize(MeanAcceptability = mean(SliderResponse),
+            SD = sd(SliderResponse))
 print(agr)
 
 sub <- d[!is.na(d$Valence), ]
@@ -46,15 +48,22 @@ nrow(d)
 
 str(sub)
 
+
+fillers <- d %>% 
+  filter(TrialType == "filler")
+nrow(fillers)
+
+View(fillers)
+
 ```
 
 ```{r}
-ggplot(sub, aes(Response, fill = Valence)) +
+ggplot(sub, aes(SliderResponse, fill = Valence)) +
   geom_density(alpha = 0.5) +
   scale_fill_manual(values = c("bad"="#F52731","good"= "#27BEF5", "neutral"="#8E27F5"))
 
 
-ggplot(sub, aes(Response,fill=Valence)) +
+ggplot(sub, aes(SliderResponse,fill=Valence)) +
   geom_density(alpha = .5) +
   facet_wrap(~Valence) +
   scale_fill_manual(values = c("bad"="#F52731","good"= "#27BEF5", "neutral"="#8E27F5"))
@@ -62,57 +71,128 @@ ggplot(sub, aes(Response,fill=Valence)) +
 ```
 
 ```{r}
-
-agr <- sub %>% 
-  group_by(Valence) %>% 
-  reframe(MeanPropAtIssue = mean(Response), 
-          CILow = ci.low(Response), 
-          CIHigh = ci.high(Response)) %>%
-  mutate(YMin = MeanPropAtIssue - CILow, 
-         YMax = MeanPropAtIssue + CIHigh)
+agr <- d %>% 
+  group_by(Language,ContextCondition) %>% 
+  filter(TrialType == "test") %>% 
+  reframe(MeanAcceptability = mean(SliderResponse), 
+          CILow = ci.low(SliderResponse), 
+          CIHigh = ci.high(SliderResponse)) %>%
+  mutate(YMin = MeanAcceptability - CILow, 
+         YMax = MeanAcceptability + CIHigh)
 
 
 dodge = position_dodge(.9)
-ggplot(data=agr, aes(x=Valence,y=MeanPropAtIssue,fill=Valence)) +
+ggplot(data=agr, aes(x=ContextCondition,y=MeanAcceptability,fill=Language)) +
   geom_bar(position=dodge,stat="identity",color = "black") +
   geom_errorbar(aes(ymin=YMin,ymax=YMax),width=.25,position=position_dodge(0.9)) +
-  scale_fill_manual(values = c("neutral"="#F54927","bad"= "#FCC6BB", "good"="#9C2007"))
+  scale_fill_manual(values = vaPalette) +
+   theme(
+    legend.position = "top",
+    legend.direction = "horizontal",
+    axis.title.x = element_blank(),
+    axis.title.y = element_text(size = 12),
+    axis.text.x = element_text(size = 12),
+    axis.text.y = element_text(size = 12),
+    legend.title = element_text(size = 12),
+    legend.text = element_text(size = 12)
+  )
+
 
 ```
 
-
 ```{r}
-agr <- sub %>% 
-  group_by(TrialType,Valence) %>% 
-  reframe(MeanPropAtIssue = mean(Response), 
-          CILow = ci.low(Response), 
-          CIHigh = ci.high(Response)) %>%
-  mutate(YMin = MeanPropAtIssue - CILow, 
-         YMax = MeanPropAtIssue + CIHigh)
-# View(agr)
+agr <- d %>% 
+  filter(TrialType == "test") %>% 
+  group_by(Valence,ContextCondition,LexicalType) %>% 
+  reframe(MeanAcceptability = mean(SliderResponse), 
+          CILow = ci.low(SliderResponse), 
+          CIHigh = ci.high(SliderResponse)) %>%
+  mutate(YMin = MeanAcceptability - CILow, 
+         YMax = MeanAcceptability + CIHigh)
+
 
 dodge = position_dodge(.9)
-ggplot(data=agr, aes(x=reorder(TrialType,MeanPropAtIssue),y=MeanPropAtIssue, fill=Valence)) +
-  geom_bar(position=dodge,stat="identity") + 
+ggplot(data=agr, aes(x=Valence,y=MeanAcceptability,fill=LexicalType)) +
+  geom_bar(position=dodge,stat="identity",color = "black") +
+  facet_wrap(~ContextCondition) +
   geom_errorbar(aes(ymin=YMin,ymax=YMax),width=.25,position=position_dodge(0.9)) +
-  scale_fill_manual(values = c("neutral"="#F54927","bad"= "#FCC6BB", "good"="#9C2007"))
+  scale_fill_manual(values = vaPalette) +
+   theme(
+    legend.position = "top",
+    legend.direction = "horizontal",
+    axis.title.x = element_blank(),
+    axis.title.y = element_text(size = 12),
+    axis.text.x = element_text(size = 12),
+    axis.text.y = element_text(size = 12),
+    legend.title = element_text(size = 12),
+    legend.text = element_text(size = 12)
+  )
+
+
+```
+
+```{r}
+agr <- d %>% 
+  filter(TrialType == "test") %>% 
+  group_by(Valence,ContextCondition,LexicalType) %>% 
+  reframe(MeanAcceptability = mean(SliderResponse), 
+          CILow = ci.low(SliderResponse), 
+          CIHigh = ci.high(SliderResponse)) %>%
+  mutate(YMin = MeanAcceptability - CILow, 
+         YMax = MeanAcceptability + CIHigh)
+
+
+dodge = position_dodge(.9)
+ggplot(data=agr, aes(x=Valence,y=MeanAcceptability,fill=ContextCondition)) +
+  geom_bar(position=dodge,stat="identity",color = "black") +
+  facet_wrap(~LexicalType) +
+  geom_errorbar(aes(ymin=YMin,ymax=YMax),width=.25,position=position_dodge(0.9)) +
+  scale_fill_manual(values = vaPalette) +
+   theme(
+    legend.position = "top",
+    legend.direction = "horizontal",
+    axis.title.x = element_blank(),
+    axis.title.y = element_text(size = 12),
+    axis.text.x = element_text(size = 12),
+    axis.text.y = element_text(size = 12),
+    legend.title = element_text(size = 12),
+    legend.text = element_text(size = 12)
+  )
+
+
 ```
 
 
 ```{r}
-agr <- sub %>% 
-  group_by(Valence,Word) %>% 
-  reframe(MeanPropAtIssue = mean(Response), 
-          CILow = ci.low(Response), 
-          CIHigh = ci.high(Response)) %>%
-  mutate(YMin = MeanPropAtIssue - CILow, 
-         YMax = MeanPropAtIssue + CIHigh)
-# View(agr)
+agr <- d %>% 
+  filter(TrialType == "test") %>% 
+  group_by(Valence,ContextCondition, LexicalType,Language) %>% 
+  reframe(MeanAcceptability = mean(SliderResponse), 
+          CILow = ci.low(SliderResponse), 
+          CIHigh = ci.high(SliderResponse)) %>%
+  mutate(YMin = MeanAcceptability - CILow, 
+         YMax = MeanAcceptability + CIHigh)
 
-ggplot(agr, aes(x = reorder(Word,MeanPropAtIssue), y = MeanPropAtIssue, fill = Valence)) +
-  geom_bar(position=dodge,stat="identity") + 
+
+dodge = position_dodge(.9)
+ggplot(data=agr, aes(x=LexicalType,y=MeanAcceptability,fill=Language)) +
+  geom_bar(position=dodge,stat="identity",color = "black") +
+  facet_grid(Valence~ContextCondition) +
   geom_errorbar(aes(ymin=YMin,ymax=YMax),width=.25,position=position_dodge(0.9)) +
-  scale_fill_manual(values = c("neutral"="#F54927","bad"= "#FCC6BB", "good"="#9C2007")) +
-  theme(axis.text.x = element_text(angle = 30, hjust = 1))
+  scale_fill_manual(values = vaPalette) +
+   theme(
+    legend.position = "top",
+    legend.direction = "horizontal",
+    axis.title.x = element_blank(),
+    axis.title.y = element_text(size = 12),
+    axis.text.x = element_text(size = 12),
+    axis.text.y = element_text(size = 12),
+    legend.title = element_text(size = 12),
+    legend.text = element_text(size = 12)
+  )
+
+
 ```
+
+
 

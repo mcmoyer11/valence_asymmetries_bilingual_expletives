@@ -55,23 +55,29 @@ read.pcibex <- function(filepath, auto.colnames=TRUE, fun.col=function(col,cols)
 }
 
 # Read in the results
-d <- read.pcibex("../data/results_prod.csv")
+d.it <- read.pcibex("../data/results_it.csv")
+d.it["Language"] <- "Italian"
+nrow(d.it)
+table(d.it$Group)
 
-levels(as.factor(d$Label))
 
+d.eng <- read.pcibex("../data/results_eng.csv")
+d.eng["Language"] <- "English"
+nrow(d.eng)
+table(d.eng$Group)
+
+d <- rbind(d.it,d.eng)
+nrow(d)
+# Assign participant number
+d$Participant <- as.integer(factor(d$MD5.hash.of.participant.s.IP.address))
+length(unique(d$Participant))
+
+names(d)
 ```
 
 
 
 ```{r}
-# Assign participant number
-d$Participant <- as.integer(factor(d$MD5.hash.of.participant.s.IP.address))
-length(unique(d$Participant))
-
-lq <- d %>% 
-  filter(Label == "leap-q") %>% 
-  View()
-
 # Separate out demographic information
 demo <- d %>% 
     filter((Label == "demo") &
@@ -93,17 +99,35 @@ lq <- d %>%
         names_prefix = "LQ_"
       )
 names(d)
+
 d.rating <- d %>% 
-    filter((Label == "rating_task") &
-             (PennElementType == "Scale")) %>% 
-    dplyr::select(Participant,Label,Value,Number,TrialType,Valence,LexicalType,ContextCondition,Group,Name) %>% 
-    rename(LikertResponse = Value)
+    filter((Label == "rating_task") & 
+             (PennElementType %in% c("Scale","Var"))) %>% 
+      pivot_wider(
+          names_from = PennElementName,
+          values_from = Value
+          # names_prefix = "LQ_"
+        ) 
+
+
+
+      # dplyr::select(Participant,Label,Number,TrialType,Valence,LexicalType,ContextCondition,Group,Name,Language) 
+
 
 d.expl <- d %>% 
     filter((Label == "expletive_test") &
              (PennElementType == "Scale")) %>% 
-    dplyr::select(Participant,Label,Value,Number,TrialType,Valence,LexicalType,ContextCondition,Group,Name) %>% 
-    rename(SliderResponse = Value)
+    dplyr::select(Participant,Label,Value,Number,TrialType,Valence,LexicalType,ContextCondition,Group,Name,Language) %>% 
+    rename(SliderResponse = Value) %>% 
+  # remove trailing whitespace
+  mutate(across(where(is.character), str_trim))
+
+str(d.expl$TrialType)
+
+fillers <- d.expl %>% 
+  filter(TrialType == "fillers")
+
+nrow(fillers)
 
 df_combined <- full_join(demo,lq, d.rating, d.expl, by = "Participant")
 
@@ -114,6 +138,7 @@ df_combined <- full_join(demo,lq, d.rating, d.expl, by = "Participant")
                        # ~ sapply(., paste, collapse = ";")))
 
 # df_combined <- full_join(val,df_combined, by = "Word")
+View(d)
 ```
 
 
