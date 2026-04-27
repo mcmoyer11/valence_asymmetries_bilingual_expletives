@@ -1,5 +1,5 @@
 ---
-title: "Bilingual Assholes: Analysis"
+title: "Bilingual Assholes: Expl Analysis"
 author: "morgan moyer"
 date: "`r Sys.Date()`"
 output: html_document
@@ -33,6 +33,11 @@ d$Language.n <- as.numeric(d$Language)
 summary(d$Langauge.)
 ```
 
+# Main model
+
+
+
+
 ```{r}
 d <- d %>%
   mutate(
@@ -40,6 +45,7 @@ d <- d %>%
   )
 
 d <- d %>% 
+  filter(TrialType == "test") %>% 
   mutate(Name = as.factor(Name),
          Participant = as.factor(Participant),
          ContextCondition = as.factor(ContextCondition),
@@ -47,9 +53,39 @@ d <- d %>%
          cLanguage = Language.n-mean(Language.n))
 
 
-m <- lmer(SliderResponse ~ ContextCondition*cLanguage + (1+ContextCondition*cLanguage|Name) + (1+ContextCondition|Participant), data = d)
+m <- lmer(SliderResponse ~ ContextCondition*cLanguage + (1+ContextCondition+cLanguage|Name) + (1+ContextCondition|Participant), data = d)
 summary(m)
 ```
+
+
+```{r}
+
+levels(d$LexicalType)
+d <- d %>%
+  mutate(
+    LexicalType.n = ifelse(LexicalType == "adj", 0, 1)
+  )
+
+d <- d %>% 
+  filter(TrialType == "test") %>% 
+  mutate(Name = as.factor(Name),
+         Participant = as.factor(Participant),
+         LexicalType = as.factor(LexicalType),
+         ContextCondition = as.factor(ContextCondition),
+         SliderResponse = as.numeric(SliderResponse),
+         cLanguage = Language.n-mean(Language.n),
+         cLexicalType = LexicalType.n-mean(LexicalType.n))
+
+
+m2 <- lmer(SliderResponse ~ cLexicalType*ContextCondition*cLanguage + (1+ContextCondition+cLanguage|Name) + (1+ContextCondition+cLexicalType|Participant), data = d)
+
+summary(m2)
+
+```
+
+
+# Valence?
+
 
 ```{r}
 d <- d %>% 

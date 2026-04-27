@@ -106,12 +106,19 @@ d.rating <- d %>%
       pivot_wider(
           names_from = PennElementName,
           values_from = Value
-          # names_prefix = "LQ_"
-        ) 
+        )  %>%
+    group_by(Participant) %>%
+    mutate(
+      likert_valence = first(na.omit(likert_valence)),
+      likert_arousal = first(na.omit(likert_arousal)),
+      Word = first(na.omit(Word)),
+      notFit = first(na.omit(notFit))
+    ) %>%
+    filter(row_number() == 1) %>%  # Keep only the first row per group
+    ungroup()
 
-
-
-      # dplyr::select(Participant,Label,Number,TrialType,Valence,LexicalType,ContextCondition,Group,Name,Language) 
+View(d.rating)
+      
 
 
 d.expl <- d %>% 
