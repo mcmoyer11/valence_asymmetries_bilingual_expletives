@@ -103,6 +103,38 @@ ggplot(data=agr, aes(x=ContextCondition,y=MeanAcceptability,fill=Language)) +
 ```{r}
 agr <- d %>% 
   filter(TrialType == "test") %>% 
+  group_by(ContextCondition,LexicalType) %>% 
+  reframe(MeanAcceptability = mean(SliderResponse), 
+          CILow = ci.low(SliderResponse), 
+          CIHigh = ci.high(SliderResponse)) %>%
+  mutate(YMin = MeanAcceptability - CILow, 
+         YMax = MeanAcceptability + CIHigh)
+
+
+dodge = position_dodge(.9)
+ggplot(data=agr, aes(x=ContextCondition,y=MeanAcceptability,fill=LexicalType)) +
+  geom_bar(position=dodge,stat="identity",color = "black") +
+  # facet_wrap(~ContextCondition) +
+  geom_errorbar(aes(ymin=YMin,ymax=YMax),width=.25,position=position_dodge(0.9)) +
+  scale_fill_manual(values = vaPalette) +
+   theme(
+    legend.position = "top",
+    legend.direction = "horizontal",
+    axis.title.x = element_blank(),
+    axis.title.y = element_text(size = 12),
+    axis.text.x = element_text(size = 12),
+    axis.text.y = element_text(size = 12),
+    legend.title = element_text(size = 12),
+    legend.text = element_text(size = 12)
+  )
+
+
+```
+
+
+```{r}
+agr <- d %>% 
+  filter(TrialType == "test") %>% 
   group_by(Valence,ContextCondition,LexicalType) %>% 
   reframe(MeanAcceptability = mean(SliderResponse), 
           CILow = ci.low(SliderResponse), 

@@ -19,10 +19,7 @@ cbPalette <- c("#56B4E9", "#D55E00", "#009E73","#999999", "#E69F00")
 this.dir <- dirname(rstudioapi::getSourceEditorContext()$path)
 setwd(this.dir)
 source("../helpers.R")
-```
 
-
-```{r}
 read.pcibex <- function(filepath, auto.colnames=TRUE, fun.col=function(col,cols){cols[cols==col]<-paste(col,"Ibex",sep=".");return(cols)}) {
   n.cols <- max(count.fields(filepath,sep=",",quote=NULL),na.rm=TRUE)
   if (auto.colnames){
@@ -77,6 +74,7 @@ names(d)
 
 
 
+
 ```{r}
 # Separate out demographic information
 demo <- d %>% 
@@ -100,24 +98,45 @@ lq <- d %>%
       )
 names(d)
 
+part.lang <- na.omit(unique(d[,c("Participant","Language")]))
+
+nrow(part.lang)
+
 d.rating <- d %>% 
     filter((Label == "rating_task") & 
              (PennElementType %in% c("Scale","Var"))) %>% 
       pivot_wider(
           names_from = PennElementName,
           values_from = Value
-        )  %>%
-    group_by(Participant) %>%
-    mutate(
-      likert_valence = first(na.omit(likert_valence)),
-      likert_arousal = first(na.omit(likert_arousal)),
-      Word = first(na.omit(Word)),
-      notFit = first(na.omit(notFit))
-    ) %>%
-    filter(row_number() == 1) %>%  # Keep only the first row per group
-    ungroup()
+        )  %>% 
+  tidyr::fill(Participant)
 
-View(d.rating)
+# extract non-NA words and scores
+words <- d.rating %>%
+  filter(!is.na(Word)) %>%
+  select(Participant, Word)
+
+scores.v <- d.rating %>%
+  filter(!is.na(likert_valence)) %>%
+  select(likert_valence)
+scores.a <- d.rating %>%
+  filter(!is.na(likert_arousal)) %>%
+  select(likert_arousal)
+
+# combine by position
+d.rating.good <- bind_cols(words, scores.a,scores.v)
+d.rating.good <- left_join(d.rating.good,part.lang, by = "Participant")
+
+View(d.rating.good)
+
+# View(result
+
+View(d.rating.good)
+nrow(d.rating)
+length(unique(d.rating$Participant))
+length(unique(d.rating$Word))
+
+table(d.rating$Language)
       
 
 
@@ -128,6 +147,7 @@ d.expl <- d %>%
     rename(SliderResponse = Value) %>% 
   # remove trailing whitespace
   mutate(across(where(is.character), str_trim))
+
 
 str(d.expl$TrialType)
 
@@ -154,7 +174,7 @@ View(d)
 # Write to .csv not aggregating over participants
 write.csv(df_combined,"../data/processed_total.csv")
 write.csv(lq,"../data/processed_lq.csv")
-write.csv(d.rating,"../data/processed_rating.csv")
+write.csv(d.rating.good,"../data/processed_rating.csv")
 write.csv(d.expl,"../data/processed_expl.csv")
 
 ```

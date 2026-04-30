@@ -35,9 +35,6 @@ summary(d$Langauge.)
 
 # Main model
 
-
-
-
 ```{r}
 d <- d %>%
   mutate(
@@ -66,7 +63,7 @@ d <- d %>%
     LexicalType.n = ifelse(LexicalType == "adj", 0, 1)
   )
 
-d <- d %>% 
+dcen <- d %>% 
   filter(TrialType == "test") %>% 
   mutate(Name = as.factor(Name),
          Participant = as.factor(Participant),
@@ -77,25 +74,95 @@ d <- d %>%
          cLexicalType = LexicalType.n-mean(LexicalType.n))
 
 
-m2 <- lmer(SliderResponse ~ cLexicalType*ContextCondition*cLanguage + (1+ContextCondition+cLanguage|Name) + (1+ContextCondition+cLexicalType|Participant), data = d)
+m2 <- lmer(SliderResponse ~ cLexicalType*ContextCondition*cLanguage + (1+ContextCondition+cLanguage|Name) + (1+ContextCondition+cLexicalType|Participant), data = dcen)
 
 summary(m2)
 
 ```
 
 
+
+
 # Valence?
 
 
 ```{r}
-d <- d %>% 
-  filter(Valence %in% c("positive","negative")) %>% 
-  mutate(Word = as.factor(Word),
-         Participant = as.factor(Participant),
-         Valence = as.factor(Valence),
-         Response = as.numeric(Response),
-         cValence = mean)
+d <- d %>%
+  mutate(
+    LexicalType.n = ifelse(LexicalType == "adj", 0, 1),
+    Valence.n = ifelse(Valence == "neg", 0, 1)
+  )
 
-m <- lmer(Response ~ Valence + (1|Word) + (1+Valence|Participant), data = d)
-summary(m)
+dcen <- d %>% 
+  filter(Valence %in% c("pos","neg")) %>% 
+  mutate(Name = as.factor(Name),
+         Participant = as.factor(Participant),
+         ContextCondition = as.factor(ContextCondition),
+         Response = as.numeric(SliderResponse),
+         cValence = Valence.n-mean(Valence.n),
+         cLexicalType = LexicalType.n-mean(LexicalType.n))
+
+m.s <- lmer(Response ~ cLexicalType*ContextCondition + (1|Name) + (1+cLexicalType+ContextCondition|Participant), data = dcen)
+summary(m.s)
+
+m.c <- lmer(Response ~ cValence*cLexicalType*ContextCondition + (1|Name) + (1+cValence+cLexicalType+ContextCondition|Participant), data = dcen)
+summary(m.c)
+
+anova(m.s,m.c)
+
+
+```
+
+#Negative only
+
+```{r}
+
+levels(d$LexicalType)
+d <- d %>%
+  mutate(
+    LexicalType.n = ifelse(LexicalType == "adj", 0, 1)
+  )
+
+dcen <- d %>% 
+  filter((TrialType == "test") & (Valence == "neg")) %>% 
+  mutate(Name = as.factor(Name),
+         Participant = as.factor(Participant),
+         LexicalType = as.factor(LexicalType),
+         ContextCondition = as.factor(ContextCondition),
+         SliderResponse = as.numeric(SliderResponse),
+         cLanguage = Language.n-mean(Language.n),
+         cLexicalType = LexicalType.n-mean(LexicalType.n))
+
+
+m4 <- lmer(SliderResponse ~ cLexicalType*ContextCondition + (1+ContextCondition|Name) + (1+ContextCondition+cLexicalType|Participant), data = dcen)
+
+summary(m4)
+
+```
+
+# Positive
+
+```{r}
+
+levels(d$LexicalType)
+d <- d %>%
+  mutate(
+    LexicalType.n = ifelse(LexicalType == "adj", 0, 1)
+  )
+
+dcen <- d %>% 
+  filter((TrialType == "test") & (Valence == "pos")) %>% 
+  mutate(Name = as.factor(Name),
+         Participant = as.factor(Participant),
+         LexicalType = as.factor(LexicalType),
+         ContextCondition = as.factor(ContextCondition),
+         SliderResponse = as.numeric(SliderResponse),
+         cLanguage = Language.n-mean(Language.n),
+         cLexicalType = LexicalType.n-mean(LexicalType.n))
+
+
+m5 <- lmer(SliderResponse ~ cLexicalType*ContextCondition + (1+ContextCondition|Name) + (1+ContextCondition+cLexicalType|Participant), data = dcen)
+
+summary(m5)
+
 ```
