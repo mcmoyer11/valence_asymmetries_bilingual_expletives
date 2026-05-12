@@ -1,0 +1,158 @@
+---
+title: "Bilingual Assholes: Ratings Graphs"
+author: "morgan moyer"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+
+```{r setup, include=FALSE, warning=FALSE, echo=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+library(lme4)
+library(lmerTest)
+library(multcomp) # not available for this version of R
+library(stringr)
+library(textstem)
+library(sciplot)
+library(tidyverse)
+theme_set(theme_bw())
+cbPalette <- c("#56B4E9", "#D55E00", "#009E73","#999999", "#E69F00")
+vaPalette <- c("#FCC6BB", "#F54927", "#9C2007", "#440E03")
+gPal <- c("#B9E615","#5E15E6","#F78D02", "#009E73")
+
+# scale_fill_manual(values = vaPalette)
+# valPal <- c("#F4320B")
+
+this.dir <- dirname(rstudioapi::getSourceEditorContext()$path)
+setwd(this.dir)
+source("../helpers.R")
+
+d <- read.csv("../data/processed_rating.csv")
+pairs <- read.csv("../data/word_pairs.csv")
+
+length(unique(d$Word))
+nrow(d)
+
+```
+
+
+## Summary Stats
+```{r}
+agr <- d %>% 
+  group_by(Word) %>% 
+  summarize(MeanValence = mean(likert_valence),
+            V.SD = sd(likert_valence),
+            MeanArousal = mean(likert_arousal),
+            A.SD = sd(likert_arousal))
+
+```
+
+```{r}
+
+hist(d$likert_valence,
+     # breaks = seq(0.5, 5, 9),  # centers bars on integers (for 1–7 scale)
+     main = "Histogram of Likert Responses",
+     xlab = "Likert Score",
+     col = "lightblue")
+
+
+counts <- table(d$Language,d$likert_valence)
+
+barplot(counts,
+        main = "Distribution of Likert Responses",
+        xlab = "Likert Score",
+        ylab = "Frequency",
+        col = "lightblue")
+
+
+ggplot(d, aes(x = factor(likert_valence))) +
+  geom_bar(fill = "lightblue") +
+  facet_wrap(~Language) +
+  labs(title = "Distribution of Likert Responses",
+       x = "Likert Score",
+       y = "Count")
+
+
+ggplot(d, aes(x = factor(likert_arousal))) +
+  geom_bar(fill = "lightblue") +
+  facet_wrap(~Language) +
+  labs(title = "Distribution of Likert Responses",
+       x = "Likert Score",
+       y = "Count")
+
+```
+
+
+```{r}
+names(d)
+
+agr <- d %>% 
+  group_by(Word,Language) %>% 
+  summarize(MeanValence = mean(likert_valence),
+            SD = sd(likert_valence),
+            MeanArousal = mean(likert_arousal),
+            SD = sd(likert_arousal))
+  
+# dev.off()  # Close all devices
+ggplot(agr, aes(x = MeanArousal, y = MeanValence, color = Language)) +
+  geom_point(size = 2) +
+  geom_text_repel(aes(label = Word), 
+                  max.overlaps = Inf,
+                  box.padding = 0.3,
+                  point.padding = 0.3) +
+  scale_color_manual(values = c("Italian" = "#F54927", "English" = "#440E03")) +
+  coord_cartesian(xlim = c(0, 9), ylim = c(0, 9)) +  # Better than xlim/ylim
+  labs(x = "Likert Arousal", y = "Likert Valence",
+       # title = "Word Valence vs Arousal Ratings",
+       color = "Language") +
+  theme_minimal() +
+  theme(
+    axis.title.x = element_blank(),
+    axis.title.y = element_text(size = 12),
+    axis.text.x = element_text(size = 12),
+    axis.text.y = element_text(size = 12),
+    legend.title = element_text(size = 12),
+    legend.text = element_text(size = 12)
+  )
+
+```
+
+
+# Looking at word pairs
+
+
+```{r}
+agr <- d %>%
+  group_by(Word,Language) %>% 
+  summarize(MeanValence = mean(likert_valence),
+            SD = sd(likert_valence),
+            MeanArousal = mean(likert_arousal),
+            SD = sd(likert_arousal))
+
+View(pairs)
+result <- pairs %>%
+  # join English rows
+  left_join(
+    agr %>% filter(Language == "English"),
+    by = c("English" = "Word")
+  ) %>%
+  rename_with(~ paste0(., "_EN"),
+              c(MeanValence, SD, MeanArousal)) %>%
+  # join Italian rows
+  left_join(
+    agr %>% filter(Language == "Italian"),
+    by = c("Italian" = "Word")
+  ) %>%
+  rename_with(~ paste0(., "_IT"),
+              c(MeanValence, SD, MeanArousal))
+
+# result <- result %>% tidyr::drop_na()
+names(results)
+View(results)
+results <- results %>% 
+  mutate(MeanValDifference = abs(MeanValence_EN - MeanValence_IT),
+         MeanAroDifference = abs(MeanArousal_EN - MeanArousal_IT))
+
+```
+
