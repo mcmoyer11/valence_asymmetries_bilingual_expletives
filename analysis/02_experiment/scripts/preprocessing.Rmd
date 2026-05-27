@@ -54,14 +54,14 @@ read.pcibex <- function(filepath, auto.colnames=TRUE, fun.col=function(col,cols)
 # Read in the results
 d.it <- read.pcibex("../data/results_it.csv")
 d.it["StudyLanguage"] <- "Italian"
-d.it["Nativeness"] <- "L1"
+d.it["Nativeness"] <- "L2"
 nrow(d.it)
 table(d.it$Group)
 
 
 d.eng <- read.pcibex("../data/results_eng.csv")
 d.eng["StudyLanguage"] <- "English"
-d.eng["Nativeness"] <- "L2"
+d.eng["Nativeness"] <- "L1"
 nrow(d.eng)
 table(d.eng$Group)
 
@@ -114,6 +114,7 @@ d.rating <- d %>%
         )  %>% 
   tidyr::fill(Participant)
 
+
 # extract non-NA words and scores
 words <- d.rating %>%
   filter(!is.na(Word)) %>%
@@ -125,10 +126,10 @@ scores.v <- d.rating %>%
 scores.a <- d.rating %>%
   filter(!is.na(likert_arousal)) %>%
   select(likert_arousal)
-
 # combine by position
 d.rating.good <- bind_cols(words, scores.a,scores.v)
 d.rating.good <- left_join(d.rating.good,part.lang, by = "Participant")
+
 
 nrow(d.rating)
 length(unique(d.rating$Participant))

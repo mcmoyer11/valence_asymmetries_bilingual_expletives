@@ -28,7 +28,24 @@ this.dir <- dirname(rstudioapi::getSourceEditorContext()$path)
 setwd(this.dir)
 source("../helpers.R")
 
-d <- read.csv("../data/processed_rating.csv")
+df_s1 <- read.csv("../../01_experiment/data/processed_rating.csv")
+df_s1["Study"] <- "Study1"
+length(unique(df_s1$Participant))
+
+df_s2 <- read.csv("../../02_experiment/data/data_rating_exclusions.csv")
+df_s2["Study"] <- "Study2"
+df_s2$X.1 <- NULL
+length(unique(df_s2$Participant))
+# offset the participant numbering
+df_s2$Participant <- df_s2$Participant + max(df_s1$Participant)
+
+names(df_s1)
+names(df_s2)
+
+d <- rbind(df_s1,df_s2)
+length(unique(d$Participant)) # 458
+
+# d_high_prof <- inner_join(d,prof, by = "Participant")
 pairs <- read.csv("../data/word_pairs.csv")
 
 length(unique(d$Word))
@@ -57,7 +74,7 @@ hist(d$likert_valence,
      col = "lightblue")
 
 
-counts <- table(d$Language,d$likert_valence)
+counts <- table(d$Nativeness,d$likert_valence)
 
 barplot(counts,
         main = "Distribution of Likert Responses",
@@ -68,7 +85,7 @@ barplot(counts,
 
 ggplot(d, aes(x = factor(likert_valence))) +
   geom_bar(fill = "lightblue") +
-  facet_wrap(~Language) +
+  facet_wrap(~Nativeness) +
   labs(title = "Distribution of Likert Responses",
        x = "Likert Score",
        y = "Count")
@@ -76,8 +93,8 @@ ggplot(d, aes(x = factor(likert_valence))) +
 
 ggplot(d, aes(x = factor(likert_arousal))) +
   geom_bar(fill = "lightblue") +
-  facet_wrap(~Language) +
-  labs(title = "Distribution of Likert Responses",
+  facet_wrap(~Nativeness) +
+  labs(title = "Total Distribution of Likert Responses",
        x = "Likert Score",
        y = "Count")
 
@@ -88,33 +105,37 @@ ggplot(d, aes(x = factor(likert_arousal))) +
 names(d)
 
 agr <- d %>% 
-  group_by(Word,Language) %>% 
+  group_by(Word,Nativeness,StudyLanguage) %>% 
   summarize(MeanValence = mean(likert_valence),
             SD = sd(likert_valence),
             MeanArousal = mean(likert_arousal),
             SD = sd(likert_arousal))
   
 # dev.off()  # Close all devices
-ggplot(agr, aes(x = MeanArousal, y = MeanValence, color = Language)) +
+ggplot(agr, aes(x = MeanArousal, y = MeanValence, color = StudyLanguage)) +
   geom_point(size = 2) +
+  facet_wrap(~Nativeness) +
   geom_text_repel(aes(label = Word), 
                   max.overlaps = Inf,
                   box.padding = 0.3,
                   point.padding = 0.3) +
-  scale_color_manual(values = c("Italian" = "#F54927", "English" = "#440E03")) +
+  scale_color_manual(values = c("English" = "#F54927", "Italian" = "#440E03")) +
   coord_cartesian(xlim = c(0, 9), ylim = c(0, 9)) +  # Better than xlim/ylim
   labs(x = "Likert Arousal", y = "Likert Valence",
        # title = "Word Valence vs Arousal Ratings",
-       color = "Language") +
+       color = "Nativeness") +
   theme_minimal() +
   theme(
-    axis.title.x = element_blank(),
+    # axis.title.x = element_blank(),
     axis.title.y = element_text(size = 12),
     axis.text.x = element_text(size = 12),
     axis.text.y = element_text(size = 12),
     legend.title = element_text(size = 12),
     legend.text = element_text(size = 12)
-  )
+  ) +
+  labs(title = "Distribution of Likert Responses",
+       x = "MeanArousal",
+       y = "MeanValence")
 
 ```
 
@@ -124,24 +145,24 @@ ggplot(agr, aes(x = MeanArousal, y = MeanValence, color = Language)) +
 
 ```{r}
 agr <- d %>%
-  group_by(Word,Language) %>% 
+  group_by(Word,Nativeness) %>% 
   summarize(MeanValence = mean(likert_valence),
             SD = sd(likert_valence),
             MeanArousal = mean(likert_arousal),
             SD = sd(likert_arousal))
 
-View(pairs)
+
 result <- pairs %>%
   # join English rows
   left_join(
-    agr %>% filter(Language == "English"),
+    agr %>% filter(Nativeness == "English"),
     by = c("English" = "Word")
   ) %>%
   rename_with(~ paste0(., "_EN"),
               c(MeanValence, SD, MeanArousal)) %>%
   # join Italian rows
   left_join(
-    agr %>% filter(Language == "Italian"),
+    agr %>% filter(Nativeness == "Italian"),
     by = c("Italian" = "Word")
   ) %>%
   rename_with(~ paste0(., "_IT"),

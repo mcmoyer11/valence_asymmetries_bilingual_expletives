@@ -37,10 +37,12 @@ names(df)
 length(unique(df$Participant))
 ```
 
+# Exclusions
 ## First remove the non-italian speaking participants
 ```{r}
 d <- df %>% 
-  filter(!Participant %in% non_its$Participant)
+  filter(!Participant %in% non_its$Participant) %>% 
+  filter(!Participant %in% low_reading$Participant)
 
 # How many people were removed?
 length(unique(df$Participant)) - length(unique(d$Participant))
@@ -84,7 +86,7 @@ ggplot(d, aes(SliderResponse,fill=Valence)) +
 
 ```{r}
 agr <- d %>% 
-  group_by(Language,ContextCondition) %>% 
+  group_by(Nativeness,ContextCondition) %>% 
   filter(TrialType == "test") %>% 
   reframe(MeanAcceptability = mean(SliderResponse), 
           CILow = ci.low(SliderResponse), 
@@ -94,7 +96,7 @@ agr <- d %>%
 
 
 dodge = position_dodge(.9)
-ggplot(data=agr, aes(x=ContextCondition,y=MeanAcceptability,fill=Language)) +
+ggplot(data=agr, aes(x=ContextCondition,y=MeanAcceptability,fill=Nativeness)) +
   geom_bar(position=dodge,stat="identity",color = "black") +
   geom_errorbar(aes(ymin=YMin,ymax=YMax),width=.25,position=position_dodge(0.9)) +
   scale_fill_manual(values = vaPalette) +
@@ -210,7 +212,7 @@ ggplot(data=agr, aes(x=Valence,y=MeanAcceptability,fill=ContextCondition)) +
 ```{r}
 agr <- d %>% 
   filter(TrialType == "test") %>% 
-  group_by(Valence,ContextCondition, LexicalType,Language) %>% 
+  group_by(Valence,ContextCondition, LexicalType,Nativeness) %>% 
   reframe(MeanAcceptability = mean(SliderResponse), 
           CILow = ci.low(SliderResponse), 
           CIHigh = ci.high(SliderResponse)) %>%
@@ -219,7 +221,7 @@ agr <- d %>%
 
 
 dodge = position_dodge(.9)
-ggplot(data=agr, aes(x=LexicalType,y=MeanAcceptability,fill=Language)) +
+ggplot(data=agr, aes(x=LexicalType,y=MeanAcceptability,fill=Nativeness)) +
   geom_bar(position=dodge,stat="identity",color = "black") +
   facet_grid(Valence~ContextCondition) +
   geom_errorbar(aes(ymin=YMin,ymax=YMax),width=.25,position=position_dodge(0.9)) +
@@ -284,7 +286,7 @@ ggplot(sub, aes(SliderResponse,fill=Valence)) +
 ```{r}
 agr <- d %>% 
   filter(TrialType == "test") %>% 
-  group_by(Language,ContextCondition) %>% 
+  group_by(Nativeness,ContextCondition) %>% 
   reframe(MeanAcceptability = mean(SliderResponse), 
           CILow = ci.low(SliderResponse), 
           CIHigh = ci.high(SliderResponse)) %>%
@@ -293,7 +295,7 @@ agr <- d %>%
 
 
 dodge = position_dodge(.9)
-ggplot(data=agr, aes(x=ContextCondition,y=MeanAcceptability,fill=Language)) +
+ggplot(data=agr, aes(x=ContextCondition,y=MeanAcceptability,fill=Nativeness)) +
   geom_bar(position=dodge,stat="identity",color = "black") +
   geom_errorbar(aes(ymin=YMin,ymax=YMax),width=.25,position=position_dodge(0.9)) +
   scale_fill_manual(values = vaPalette) +
@@ -409,7 +411,7 @@ ggplot(data=agr, aes(x=Valence,y=MeanAcceptability,fill=ContextCondition)) +
 ```{r}
 agr <- d %>% 
   filter(TrialType == "test") %>% 
-  group_by(Valence,ContextCondition, LexicalType,Language) %>% 
+  group_by(Valence,ContextCondition, LexicalType,Nativeness) %>% 
   reframe(MeanAcceptability = mean(SliderResponse), 
           CILow = ci.low(SliderResponse), 
           CIHigh = ci.high(SliderResponse)) %>%
@@ -418,7 +420,7 @@ agr <- d %>%
 
 
 dodge = position_dodge(.9)
-ggplot(data=agr, aes(x=LexicalType,y=MeanAcceptability,fill=Language)) +
+ggplot(data=agr, aes(x=LexicalType,y=MeanAcceptability,fill=Nativeness)) +
   geom_bar(position=dodge,stat="identity",color = "black") +
   facet_grid(Valence~ContextCondition) +
   geom_errorbar(aes(ymin=YMin,ymax=YMax),width=.25,position=position_dodge(0.9)) +
@@ -441,7 +443,7 @@ ggplot(data=agr, aes(x=LexicalType,y=MeanAcceptability,fill=Language)) +
 # Save the exclusions file to .csv for analysis
 ```{r}
 
-write.csv(sub,"../data/data_exclusions.csv")
+write.csv(sub,"../data/data_expl_exclusions.csv")
 ```
 
 

@@ -29,6 +29,7 @@ setwd(this.dir)
 source("../helpers.R")
 
 d <- read.csv("../data/processed_lq.csv")
+length(unique(d$Participant)) #215
 ```
 
 # Exclude participants who don't speak Italian

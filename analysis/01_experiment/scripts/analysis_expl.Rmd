@@ -1,5 +1,5 @@
 ---
-title: "Bilingual Assholes: Expl Analysis"
+title: "Bilingual Assholes Study 1: Expl Analysis"
 author: "morgan moyer"
 date: "`r Sys.Date()`"
 output: html_document
@@ -26,36 +26,100 @@ setwd(this.dir)
 source("../helpers.R")
 
 d <- read.csv("../data/processed_expl.csv")
+# prof <- read.csv("../data/df_italian_high_read.csv")
 
-names(d)
-str(d$Language)
-d$Language.n <- as.numeric(d$Language)
-summary(d$Langauge.)
+# d_high_prof <- inner_join(d,prof, by = "Participant")
+
 ```
 
-# Main model
+```{r}
+names(d)
+```
+
+
+# Theoretical Questions
+
+```{r}
+
+d <- d %>%
+  mutate(
+    LexicalType.n = ifelse(LexicalType == "adj", 0, 1)
+  ) %>% 
+  # looking only at the L2 data
+  # filter(Nativeness == "Italian") %>%
+  mutate(Name = as.factor(Name),
+         Participant = as.factor(Participant),
+          LexicalType = as.factor(LexicalType),
+         ContextCondition = as.factor(ContextCondition),
+         SliderResponse = as.numeric(SliderResponse),
+         # cNativeness = Nativeness.n-mean(Nativeness.n),
+         cLexicalType = LexicalType.n-mean(LexicalType.n))
+
+
+m <- lmer(SliderResponse ~ ContextCondition + (1+ContextCondition|Name) + (1+ContextCondition|Participant), data = d)
+summary(m)
+
+m2 <- lmer(SliderResponse ~ ContextCondition*LexicalType + (1+ContextCondition|Name) + (1+ContextCondition|Participant), data = d)
+summary(m2)
+
+
+m3 <- lmer(SliderResponse ~ ContextCondition*LexicalType*Valence + (1+ContextCondition|Name) + (1+ContextCondition|Participant), data = d)
+summary(m3)
+
+anova(m2,m3)
+```
+
+
+```{r}
+levels(d$LexicalType)
+d <- d %>%
+  mutate(
+    LexicalType.n = ifelse(LexicalType == "adj", 0, 1)
+  )
+
+dcen <- d %>% 
+  filter(TrialType == "test") %>% 
+  mutate(Name = as.factor(Name),
+         Participant = as.factor(Participant),
+         LexicalType = as.factor(LexicalType),
+         ContextCondition = as.factor(ContextCondition),
+         SliderResponse = as.numeric(SliderResponse),
+         # cNativeness = Nativeness.n-mean(Nativeness.n),
+         cLexicalType = LexicalType.n-mean(LexicalType.n))
+
+
+m3 <- lmer(SliderResponse ~ LexicalType*ContextCondition*Valence*Nativeness + (1+ContextCondition|Name) + (1+ContextCondition+LexicalType|Participant), data = dcen)
+
+summary(m3)
+
+
+```
+
+
+
+# NAtiveness Main model
 
 ```{r}
 d <- d %>%
   mutate(
-    Language.n = ifelse(Language == "English", 0, 1)
+    Nativeness.n = ifelse(Nativeness == "L1", 0, 1)
   )
 
 d <- d %>% 
-  filter(TrialType == "test") %>% 
+  # looking only at the L2 data
+  # filter(Nativeness == "Italian") %>%
   mutate(Name = as.factor(Name),
          Participant = as.factor(Participant),
          ContextCondition = as.factor(ContextCondition),
          SliderResponse = as.numeric(SliderResponse),
-         cLanguage = Language.n-mean(Language.n))
+         cNativeness = Nativeness.n-mean(Nativeness.n))
 
 
-m <- lmer(SliderResponse ~ ContextCondition*cLanguage + (1+ContextCondition+cLanguage|Name) + (1+ContextCondition|Participant), data = d)
+m <- lmer(SliderResponse ~ ContextCondition*cNativeness + (1+ContextCondition|Name) + (1+ContextCondition|Participant), data = d)
 summary(m)
-```
 
-
-```{r}
+m <- lmer(SliderResponse ~ ContextCondition*Nativeness + (1+ContextCondition|Name) + (1+ContextCondition|Participant), data = d)
+summary(m)
 
 levels(d$LexicalType)
 d <- d %>%
@@ -70,13 +134,22 @@ dcen <- d %>%
          LexicalType = as.factor(LexicalType),
          ContextCondition = as.factor(ContextCondition),
          SliderResponse = as.numeric(SliderResponse),
-         cLanguage = Language.n-mean(Language.n),
+         cNativeness = Nativeness.n-mean(Nativeness.n),
          cLexicalType = LexicalType.n-mean(LexicalType.n))
 
 
-m2 <- lmer(SliderResponse ~ cLexicalType*ContextCondition*cLanguage + (1+ContextCondition+cLanguage|Name) + (1+ContextCondition+cLexicalType|Participant), data = dcen)
-
+m2 <- lmer(SliderResponse ~ LexicalType*ContextCondition*Nativeness + (1+ContextCondition|Name) + (1+ContextCondition+LexicalType|Participant), data = d)
 summary(m2)
+
+m3 <- lmer(SliderResponse ~ LexicalType*ContextCondition*Valence*Nativeness + (1+ContextCondition|Name) + (1+ContextCondition+LexicalType+Valence|Participant), data = d)
+summary(m3)
+
+anova(m2,m3)
+
+
+m2 <- lmer(SliderResponse ~ LexicalType*ContextCondition*Valence + (1+ContextCondition|Name) + (1+ContextCondition+LexicalType|Participant), data = d)
+m3 <- lmer(SliderResponse ~ LexicalType*ContextCondition*Valence*Nativeness + (1+ContextCondition|Name) + (1+ContextCondition+LexicalType+Valence|Participant), data = d)
+anova(m2,m3)
 
 ```
 
@@ -105,13 +178,52 @@ dcen <- d %>%
 m.s <- lmer(Response ~ cLexicalType*ContextCondition + (1|Name) + (1+cLexicalType+ContextCondition|Participant), data = dcen)
 summary(m.s)
 
-m.c <- lmer(Response ~ cValence*cLexicalType*ContextCondition + (1|Name) + (1+cValence+cLexicalType+ContextCondition|Participant), data = dcen)
+m.c <- lmer(Response ~ Valence*cLexicalType*ContextCondition + (1|Name) + (1+Valence+cLexicalType+ContextCondition|Participant), data = dcen)
 summary(m.c)
 
 anova(m.s,m.c)
 
 
+
 ```
+
+
+
+# Does Nativeness explain more variance?
+- No
+```{r}
+m.c.l <- lmer(Response ~ Nativeness*cValence*cLexicalType*ContextCondition + (1|Name) + (1+cValence+cLexicalType+ContextCondition|Participant), data = dcen)
+summary(m.c.l)
+
+anova(m.c, m.c.l)
+```
+
+# Valence and Nativeness?
+```{r}
+m.v.l <- lmer(Response ~ Nativeness*cValence + (1|Name) + (1+cValence|Participant), data = dcen)
+summary(m.v.l)
+```
+
+
+## But in the TO condition
+```{r}
+to <- d %>% 
+  filter(ContextCondition == "TO") %>% 
+  filter(Valence %in% c("pos","neg")) %>% 
+  mutate(Name = as.factor(Name),
+         Participant = as.factor(Participant),
+         ContextCondition = as.factor(ContextCondition),
+         Response = as.numeric(SliderResponse),
+         cValence = Valence.n-mean(Valence.n),
+         cLexicalType = LexicalType.n-mean(LexicalType.n))
+
+m.to <- lmer(Response ~ Nativeness*Valence*cLexicalType + (1|Name) + (1+cValence+cLexicalType|Participant), data = to)
+
+summary(m.to)
+
+```
+
+
 
 #Negative only
 
@@ -130,7 +242,7 @@ dcen <- d %>%
          LexicalType = as.factor(LexicalType),
          ContextCondition = as.factor(ContextCondition),
          SliderResponse = as.numeric(SliderResponse),
-         cLanguage = Language.n-mean(Language.n),
+         cNativeness = Nativeness.n-mean(Nativeness.n),
          cLexicalType = LexicalType.n-mean(LexicalType.n))
 
 
@@ -157,7 +269,7 @@ dcen <- d %>%
          LexicalType = as.factor(LexicalType),
          ContextCondition = as.factor(ContextCondition),
          SliderResponse = as.numeric(SliderResponse),
-         cLanguage = Language.n-mean(Language.n),
+         cNativeness = Nativeness.n-mean(Nativeness.n),
          cLexicalType = LexicalType.n-mean(LexicalType.n))
 
 
@@ -165,4 +277,49 @@ m5 <- lmer(SliderResponse ~ cLexicalType*ContextCondition + (1+ContextCondition|
 
 summary(m5)
 
+```
+
+
+
+# Looking at Italian Reading Proficiency in the 
+```{r}
+names(d_high_prof)
+
+d_high_prof["ReadingProficiency"] = d_high_prof["LQ_pcibex_log_ita_proficiency_reading"]
+
+names(d_high_prof)
+d_high_prof <- d_high_prof %>% 
+  # looking only at the L2 data
+  filter(Nativeness == "Italian") %>%
+  mutate(Name = as.factor(Name),
+         Participant = as.factor(Participant),
+         ReadingProficiency = as.numeric(ReadingProficiency),
+         ContextCondition = as.factor(ContextCondition),
+         SliderResponse = as.numeric(SliderResponse),
+         LexicalType = as.factor(LexicalType))
+
+m <- lmer(SliderResponse ~ ReadingProficiency + (1|Name) + (1|Participant), data = d_high_prof)
+summary(m)
+
+m.c <- lmer(SliderResponse ~ ContextCondition + (1|Name) + (1|Participant), data = d_high_prof)
+summary(m.c)
+
+anova(m,m.c)
+
+m.c.v <- lmer(SliderResponse ~ Valence*ContextCondition + (1|Name) + (1|Participant), data = d_high_prof)
+summary(m.c.v)
+
+anova(m.c,m.c.v)
+
+m.c.v.l <- lmer(SliderResponse ~ Valence*ContextCondition*LexicalType + (1|Name) + (1|Participant), data = d_high_prof)
+summary(m.c.v.l)
+
+
+anova(m.c.v,m.c.v.l)
+
+
+m.c.v.l.r <- lmer(SliderResponse ~ Valence*ContextCondition*LexicalType*ReadingProficiency + (1|Name) + (1|Participant), data = d_high_prof)
+summary(m.c.v.l)
+
+anova(m.c.v.l,m.c.v.l.r)
 ```

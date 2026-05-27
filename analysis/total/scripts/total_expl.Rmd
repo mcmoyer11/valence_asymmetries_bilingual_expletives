@@ -30,12 +30,12 @@ source("../helpers.R")
 
 df_s1 <- read.csv("../../01_experiment/data/processed_expl.csv")
 df_s1["Study"] <- "Study1"
-length(unique(df_s1$Participant))
+length(unique(df_s1$Participant)) #301
 
 df_s2 <- read.csv("../../02_experiment/data/data_exclusions.csv")
 df_s2["Study"] <- "Study2"
 df_s2$X.1 <- NULL
-length(unique(df_s2$Participant))
+length(unique(df_s2$Participant)) #157
 # offset the participant numbering
 df_s2$Participant <- df_s2$Participant + max(df_s1$Participant)
 

@@ -54,14 +54,14 @@ read.pcibex <- function(filepath, auto.colnames=TRUE, fun.col=function(col,cols)
 # Read in the results
 d.it <- read.pcibex("../data/results_it.csv")
 d.it["StudyLanguage"] <- "Italian"
-d.it["Nativeness"] <- "L2"
+d.it["Nativeness"] <- "L1"
 nrow(d.it)
 table(d.it$Group)
 
 
 d.eng <- read.pcibex("../data/results_eng.csv")
 d.eng["StudyLanguage"] <- "English"
-d.eng["Nativeness"] <- "L1"
+d.eng["Nativeness"] <- "L2"
 nrow(d.eng)
 table(d.eng$Group)
 
