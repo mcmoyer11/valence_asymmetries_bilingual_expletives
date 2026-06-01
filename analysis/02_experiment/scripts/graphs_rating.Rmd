@@ -16,6 +16,7 @@ library(stringr)
 library(textstem)
 library(sciplot)
 library(tidyverse)
+library(ggrepel)
 theme_set(theme_bw())
 cbPalette <- c("#56B4E9", "#D55E00", "#009E73","#999999", "#E69F00")
 vaPalette <- c("#FCC6BB", "#F54927", "#9C2007", "#440E03")
@@ -147,7 +148,7 @@ agr <- d %>%
             MeanArousal = mean(likert_arousal),
             SD = sd(likert_arousal))
 
-View(pairs)
+# View(pairs)
 result <- pairs %>%
   # join English rows
   left_join(
@@ -165,11 +166,9 @@ result <- pairs %>%
               c(MeanValence, SD, MeanArousal))
 
 # result <- result %>% tidyr::drop_na()
-names(results)
-View(results)
-results <- results %>% 
+results <- result %>% 
   mutate(MeanValDifference = abs(MeanValence_EN - MeanValence_IT),
          MeanAroDifference = abs(MeanArousal_EN - MeanArousal_IT))
-
+names(results)
 ```
 
