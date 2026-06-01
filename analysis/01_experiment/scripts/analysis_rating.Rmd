@@ -5,6 +5,7 @@ date: "`r Sys.Date()`"
 output: html_document
 ---
 
+
 ```{r setup, include=FALSE, warning=FALSE, echo=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(ggplot2)
@@ -28,13 +29,14 @@ setwd(this.dir)
 source("../helpers.R")
 
 d <- read.csv("../data/processed_rating.csv")
+# 
+# non_its <- read.csv("../data/non_italian_participants.csv")
+# low_reading <- read.csv("../data/low_reading_proficiency_participants.csv")
 
 names(d)
-str(d$Nativeness)
-d$Nativeness.n <- as.numeric(d$Nativeness)
+length(unique(d$Participant))
 ```
 
-#Ordinal bad
 
 ```{r}
 d$likert_valence <- ordered(d$likert_valence)
@@ -50,14 +52,16 @@ d <- d %>%
 ```
 
 
+#Ordinal bad
 ```{r}
+
 model.ord <- glm(
   Nativeness.n ~ likert_valence * likert_arousal,
   data = d,
   family = binomial
 )
 
-summary(model)
+summary(model.ord)
 ```
 
 # numeric good
@@ -76,6 +80,7 @@ anova(model.ord, model.num, test = "Chisq")
 
 # centered best
 ```{r}
+# This is with scaled val and ar
 model.c <- glm(
   Nativeness.n ~ val_c * ar_c,
   family = binomial,
@@ -87,12 +92,13 @@ summary(model.c)
 
 
 ```{r}
-
+str(model.frame(model.c))
+sapply(model.frame(model.c), class)
+# refit the model with numeric vectors
 # ensure numeric consistency
 d$val_c <- as.numeric(d$val_c)
 d$ar_c  <- as.numeric(d$ar_c)
 
-# rebuild model if needed
 model.c <- glm(
   Nativeness.n ~ val_c * ar_c,
   family = binomial,
@@ -111,7 +117,6 @@ newdata <- expand.grid(
 
 # THIS STEP MUST SUCCEED
 newdata$prob_L2 <- predict(model.c, newdata, type = "response")
-
 
 ggplot(newdata, aes(x = val_c, y = ar_c, fill = prob_L2)) +
   geom_tile() +
@@ -193,96 +198,6 @@ newdata <- expand.grid(
 newdata$prob_L2 <- predict(model.c, newdata, type = "response")
 ```
 
-```{r}
-p1 <- ggplot() +
-
-  geom_raster(data = newdata,
-              aes(val_c, ar_c, fill = prob_L2),
-              interpolate = TRUE) +
-
-  geom_contour(data = newdata,
-               aes(val_c, ar_c, z = prob_L2),
-               breaks = c(0.2, 0.5, 0.8),
-               color = "white",
-               linewidth = 0.3) +
-
-  geom_contour(data = newdata,
-               aes(val_c, ar_c, z = prob_L2),
-               breaks = 0.5,
-               color = "black",
-               linewidth = 0.9) +
-
-  geom_point(data = d,
-             aes(val_c, ar_c, color = Nativeness),
-             alpha = 0.25,
-             size = 1.2) +
-
-  scale_fill_gradientn(
-    colors = c("#F54927", "white", "#3C91E6"),
-    limits = c(0, 1)
-  ) +
-
-  scale_color_manual(values = c("L1" = "#F54927", "L2" = "#3C91E6")) +
-
-  theme_minimal(base_size = 12) +
-  theme(
-    panel.grid = element_blank(),
-    plot.title = element_text(face = "bold")
-  ) +
-
-  labs(
-    title = "Nativeness Classification Surface (L2 probability)",
-    x = "Centered Valence",
-    y = "Centered Arousal",
-    fill = "P(L2)",
-    color = "Observed"
-  )
-```
-
-
-```{r}
-newdata$diff <- newdata$prob_L2 - (1 - newdata$prob_L2)
-p2 <- ggplot(newdata, aes(val_c, ar_c, fill = diff)) +
-
-  geom_raster(interpolate = TRUE) +
-
-  geom_contour(aes(z = diff),
-               breaks = c(-0.5, 0, 0.5),
-               color = "white",
-               linewidth = 0.3) +
-
-  geom_contour(aes(z = diff),
-               breaks = 0,
-               color = "black",
-               linewidth = 1) +
-
-  geom_point(data = d,
-             aes(val_c, ar_c, color = Nativeness),
-             alpha = 0.25,
-             size = 1.2) +
-
-  scale_fill_gradient2(
-    low = "#F54927",
-    mid = "white",
-    high = "#3C91E6",
-    midpoint = 0
-  ) +
-
-  scale_color_manual(values = c("L1" = "#F54927", "L2" = "#3C91E6")) +
-
-  theme_minimal(base_size = 12) +
-  theme(panel.grid = element_blank()) +
-
-  labs(
-    title = "Nativeness Separation Surface (L2 − L1)",
-    x = "Centered Valence",
-    y = "Centered Arousal",
-    fill = "Effect Direction",
-    color = "Observed"
-  )
-
-```
-
 
 # Are they more extreme or varied?
 
@@ -335,24 +250,36 @@ newdata <- expand.grid(
 
 newdata$prob_L2 <- predict(model.c, newdata, type = "response")
 
-p1 <- ggplot(newdata, aes(val_c, ar_c, fill = prob_L2)) +
+p1 <- ggplot() +
 
-  geom_raster(interpolate = TRUE) +
+  geom_raster(
+    data = newdata,
+    aes(x = val_c, y = ar_c, fill = prob_L2),
+    interpolate = TRUE
+  ) +
 
-  geom_contour(aes(z = prob_L2),
-               breaks = c(0.25, 0.5, 0.75),
-               color = "white",
-               linewidth = 0.3) +
+  geom_contour(
+    data = newdata,
+    aes(x = val_c, y = ar_c, z = prob_L2),
+    breaks = c(0.25, 0.5, 0.75),
+    color = "white",
+    linewidth = 0.3
+  ) +
 
-  geom_contour(aes(z = prob_L2),
-               breaks = 0.5,
-               color = "black",
-               linewidth = 0.9) +
+  geom_contour(
+    data = newdata,
+    aes(x = val_c, y = ar_c, z = prob_L2),
+    breaks = 0.5,
+    color = "black",
+    linewidth = 0.9
+  ) +
 
-  geom_point(data = d,
-             aes(val_c, ar_c, color = Nativeness),
-             alpha = 0.25,
-             size = 1.2) +
+  geom_point(
+    data = d,
+    aes(x = val_c, y = ar_c, color = Nativeness),
+    alpha = 0.25,
+    size = 1.2
+  ) +
 
   scale_fill_gradient2(
     low = "#F54927",
@@ -361,18 +288,9 @@ p1 <- ggplot(newdata, aes(val_c, ar_c, fill = prob_L2)) +
     midpoint = 0.5
   ) +
 
-  scale_color_manual(values = c("L1" = "#F54927", "L2" = "#3C91E6")) +
-
-  labs(
-    title = "A. Valence–Arousal Interaction Predicting Nativeness",
-    x = "Centered Valence",
-    y = "Centered Arousal",
-    fill = "P(L2)",
-    color = "Observed"
-  ) +
-
-  theme_minimal(base_size = 12) +
-  theme(panel.grid = element_blank())
+  scale_color_manual(values = c("L1" = "#F54927",
+                                "L2" = "#3C91E6"))
+p1
 
 d_long <- d %>%
   select(Nativeness, val_extreme, ar_extreme) %>%
@@ -441,19 +359,6 @@ ggplot(d,
 ```
 
 
-```{r}
-m <- clmm(
-  likert_arousal ~ likert_valence * Nativeness +
-    (1 | Participant),
-  data = d
-)
 
-summary(m)
-```
-
-```{r}
-d %>%
-  count(Nativeness, likert_valence, likert_arousal)
-```
 
 

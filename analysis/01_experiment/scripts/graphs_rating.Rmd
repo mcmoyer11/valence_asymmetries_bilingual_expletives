@@ -16,6 +16,7 @@ library(stringr)
 library(textstem)
 library(sciplot)
 library(tidyverse)
+library(ggrepel)
 theme_set(theme_bw())
 cbPalette <- c("#56B4E9", "#D55E00", "#009E73","#999999", "#E69F00")
 vaPalette <- c("#FCC6BB", "#F54927", "#9C2007", "#440E03")
@@ -29,15 +30,13 @@ setwd(this.dir)
 source("../helpers.R")
 
 d <- read.csv("../data/processed_rating.csv")
-# prof <- read.csv("../data/df_italian_high_read.csv")
-# d_high_prof <- inner_join(d,prof, by = "Participant")
 pairs <- read.csv("../data/word_pairs.csv")
+# non_its <- read.csv("../data/non_italian_participants.csv")
+# low_reading <- read.csv("../data/low_reading_proficiency_participants.csv")
 
-length(unique(d$Word))
-nrow(d)
-
+names(d)
+length(unique(d$Participant))
 ```
-
 
 ## Summary Stats
 ```{r}
@@ -132,7 +131,7 @@ agr <- d %>%
             MeanArousal = mean(likert_arousal),
             SD = sd(likert_arousal))
 
-View(pairs)
+# View(pairs)
 result <- pairs %>%
   # join English rows
   left_join(
@@ -150,11 +149,9 @@ result <- pairs %>%
               c(MeanValence, SD, MeanArousal))
 
 # result <- result %>% tidyr::drop_na()
-names(results)
-View(results)
-results <- results %>% 
+results <- result %>% 
   mutate(MeanValDifference = abs(MeanValence_EN - MeanValence_IT),
          MeanAroDifference = abs(MeanArousal_EN - MeanArousal_IT))
-
+names(results)
 ```
 
