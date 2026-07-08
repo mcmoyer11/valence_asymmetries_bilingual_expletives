@@ -77,7 +77,7 @@ anova(baseline,m.de)
 
 # Family Imersion
 
-```{r}
+```{r, eval=FALSE}
 m.if <- lmer(SliderResponse ~ LexicalType*Valence*ContextCondition*immers_family + (1|Participant) + (1|Name), data = d)
 
 summary(m.if)
@@ -87,7 +87,7 @@ anova(baseline,m.if)
 
 # School Imersion
 
-```{r}
+```{r, eval=FALSE}
 m.is <- lmer(SliderResponse ~ LexicalType*Valence*ContextCondition*immers_school + (1|Participant) + (1|Name), data = d)
 
 summary(m.is)
@@ -98,7 +98,7 @@ anova(baseline,m.is)
 
 # Country Imersion
 
-```{r}
+```{r, eval=FALSE}
 m.ic <- lmer(SliderResponse ~ LexicalType*Valence*ContextCondition*immers_country + (1|Participant) + (1|Name), data = d)
 
 summary(m.ic)
@@ -108,7 +108,7 @@ anova(baseline,m.ic)
 
 # Family Use
 
-```{r}
+```{r, eval=FALSE}
 m.fu <- lmer(SliderResponse ~ LexicalType*Valence*ContextCondition*use_family + (1|Participant) + (1|Name), data = d)
 
 anova(baseline,m.fu)
@@ -116,7 +116,7 @@ anova(baseline,m.fu)
 
 # Use Self "class or self-instruction"
 
-```{r}
+```{r, eval=FALSE}
 m.se <- lmer(SliderResponse ~ LexicalType*Valence*ContextCondition*use_self + (1|Participant) + (1|Name), data = d)
 
 anova(baseline,m.se)
@@ -124,7 +124,7 @@ anova(baseline,m.se)
 
 # Self LEarning
 
-```{r}
+```{r, eval=FALSE}
 m.sl <- lmer(SliderResponse ~ LexicalType*Valence*ContextCondition*learn_self + (1|Participant) + (1|Name), data = d)
 
 anova(baseline,m.sl)
