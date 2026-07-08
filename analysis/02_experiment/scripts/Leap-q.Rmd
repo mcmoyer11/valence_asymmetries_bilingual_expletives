@@ -74,9 +74,6 @@ df_italian <- d %>%
 nrow(df_italian)
 ```
 
-```{r}
-
-```
 
 
 ## Non-italian speakers, to be excluded
